@@ -458,7 +458,7 @@ async function sendMessage(){
   scrollChat();
   try{
     const hist=allChat[viewDate]||[];
-    const apiMsgs=hist.map(m=>({role:m.role,content:m.raw||m.text}));
+    const apiMsgs=hist.map(m=>({role:m.role==='ai'?'assistant':m.role,content:m.raw||m.text}));
     const res=await fetch('https://nutriai-proxydeploy.f-shichijo.workers.dev',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
