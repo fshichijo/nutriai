@@ -295,13 +295,13 @@
 </div>
 
 <script>
-const PK='nutriai_profile', LK='nutriai_log', CK='nutriai_chat', AK='nutriai_apikey';
+const PK='nutriai_profile', LK='nutriai_log', CK='nutriai_chat', AK='nutriai_apikey', WK='nutriai_weight';
 const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch{return d;}};
 const saveRaw=(k,v)=>localStorage.setItem(k,v);
 const loadRaw=(k)=>localStorage.getItem(k)||'';
 
-let profile=load(PK,null), allLog=load(LK,{}), allChat=load(CK,{});
+let profile=load(PK,null), allLog=load(LK,{}), allChat=load(CK,{}), allWeight=load(WK,{});
 let apiKey=loadRaw(AK);
 let viewDate=todayStr(), currentTab='chat', sending=false;
 let obStep=0, obData={sex:'male',age:30,height:170,weight:70,target:65,activity:'moderate'};
@@ -320,7 +320,16 @@ When the user describes exercise/workout they did, respond with:
 {"type":"exercise","items":[{"name":"exercise name","calories_burned":200,"duration":"30分","amount":"30分"}],"total_calories_burned":200,"message":"One fitness tip in Japanese."}
 \`\`\`
 
-Use accurate data. Support Japanese and English. For other questions, answer in Japanese without JSON.`;
+Use accurate data. Support Japanese and English.
+
+When the user logs their weight (e.g. "今日75kg" "体重75.5kg" "75kg" "74.8キロ"), respond with:
+1. A short encouraging message in Japanese
+2. A JSON block with type "weight":
+\`\`\`json
+{"type":"weight","kg":75.0,"message":"One short encouraging message in Japanese."}
+\`\`\`
+
+For other questions, answer in Japanese without JSON.`;
 
 function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function formatDate(s){const[y,m,d]=s.split('-');const days=['日','月','火','水','木','金','土'];return `${m}/${d}（${days[new Date(+y,+m-1,+d).getDay()]}）`;}
@@ -687,7 +696,8 @@ function renderSummary(){
       <div class="stat-card"><div class="stat-label">炭水化物</div><div class="stat-val" style="color:var(--orange)">${t.c}g</div></div>
     </div>
     <div class="achieve-card"><span style="font-size:12px;color:var(--muted);">目標達成率</span><span style="font-size:19px;font-weight:800;color:${over?'var(--pink)':'var(--accent)'}">${Math.round((net/goal)*100)}%</span></div>
-    <div class="section-title" style="margin-top:18px;">📅 直近7日間</div>${weekChart()}`;
+    <div class="section-title" style="margin-top:18px;">📅 直近7日間</div>${weekChart()}
+    <div class="section-title" style="margin-top:18px;">⚖️ 体重推移</div>${weightChart()}`;
 }
 function mb(l,v,max,color){const pct=Math.min((v/max)*100,100);return `<div class="macro-row"><div class="macro-top"><span>${l}</span><span>${v}g</span></div><div class="macro-track"><div class="macro-fill" style="width:${pct}%;background:${color}"></div></div></div>`;}
 function weekChart(){
@@ -705,6 +715,60 @@ function weekChart(){
     </div>`;
   }
   return h+`</div>`;
+}
+
+function weightChart(){
+  const dates=[];
+  for(let i=29;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+  }
+  const entries=dates.map(d=>({date:d,kg:allWeight[d]||null})).filter(e=>e.kg);
+  if(entries.length<2) return `<div style="text-align:center;color:var(--muted);font-size:12px;padding:16px 0;">記録が2日分以上になるとグラフが表示されます</div>`;
+  const kgs=entries.map(e=>e.kg);
+  const minKg=Math.floor(Math.min(...kgs)-1), maxKg=Math.ceil(Math.max(...kgs)+1);
+  const range=maxKg-minKg||1;
+  const W=320,H=100,padL=36,padB=20,padT=10;
+  const iW=W-padL-8,iH=H-padB-padT;
+  const pts=entries.map((e,i)=>{
+    const x=padL+(i/(entries.length-1))*iW;
+    const y=padT+iH-(((e.kg-minKg)/range)*iH);
+    return `${x},${y}`;
+  }).join(' ');
+  const goal=profile?.target||null;
+  let goalLine='';
+  if(goal&&goal>=minKg&&goal<=maxKg){
+    const gy=padT+iH-(((goal-minKg)/range)*iH);
+    goalLine=`<line x1="${padL}" y1="${gy}" x2="${W-8}" y2="${gy}" stroke="var(--pink)" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.6"/>
+    <text x="${padL-2}" y="${gy+4}" font-size="9" fill="var(--pink)" text-anchor="end" opacity="0.8">${goal}</text>`;
+  }
+  // Y axis labels
+  const yLabels=[minKg, Math.round((minKg+maxKg)/2), maxKg].map(v=>{
+    const y=padT+iH-(((v-minKg)/range)*iH);
+    return `<text x="${padL-4}" y="${y+4}" font-size="9" fill="var(--muted)" text-anchor="end">${v}</text>`;
+  }).join('');
+  // Latest weight dot highlight
+  const last=entries[entries.length-1];
+  const lx=padL+iW, ly=padT+iH-(((last.kg-minKg)/range)*iH);
+
+  return `<div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <span style="font-size:11px;color:var(--muted);">直近30日</span>
+      <span style="font-size:15px;font-weight:800;color:var(--accent);">${last.kg} kg</span>
+    </div>
+    <svg width="100%" viewBox="0 0 ${W} ${H}" style="overflow:visible;">
+      ${yLabels}
+      ${goalLine}
+      <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${entries.map((e,i)=>{
+        const x=padL+(i/(entries.length-1))*iW;
+        const y=padT+iH-(((e.kg-minKg)/range)*iH);
+        return `<circle cx="${x}" cy="${y}" r="3.5" fill="var(--accent)" opacity="0.7"/>`;
+      }).join('')}
+      <circle cx="${lx}" cy="${ly}" r="5.5" fill="var(--accent)"/>
+    </svg>
+    ${goal?`<div style="font-size:10px;color:var(--muted);margin-top:4px;">点線: 目標 ${goal}kg</div>`:''}
+  </div>`;
 }
 
 // ── Settings ───────────────────────────────────────────────
@@ -745,6 +809,31 @@ function resetApiKey(){
   ['chat','log','history','summary','settings'].forEach(t=>{document.getElementById('screen-'+t).classList.remove('active');document.getElementById('nav-'+t).classList.remove('active');});
   document.getElementById('screen-apikey').style.display='flex';
 }
+
+
+// ── Swipe navigation ───────────────────────────────────────
+const TABS=['chat','log','history','summary','settings'];
+let swipeStartX=0, swipeStartY=0;
+const appEl=document.getElementById('app');
+
+appEl.addEventListener('touchstart',e=>{
+  swipeStartX=e.touches[0].clientX;
+  swipeStartY=e.touches[0].clientY;
+},{passive:true});
+
+appEl.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-swipeStartX;
+  const dy=e.changedTouches[0].clientY-swipeStartY;
+  // Only horizontal swipe (dx > 50px, and more horizontal than vertical)
+  if(Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.5)return;
+  // Don't trigger if swiping inside a scrollable area
+  const target=e.target;
+  const scrollable=target.closest('.chat-messages,.scroll,.ob-wrap');
+  if(scrollable)return;
+  const idx=TABS.indexOf(currentTab);
+  if(dx<0&&idx<TABS.length-1) switchTab(TABS[idx+1]); // left swipe → next
+  if(dx>0&&idx>0) switchTab(TABS[idx-1]); // right swipe → prev
+},{passive:true});
 
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
 
