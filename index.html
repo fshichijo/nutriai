@@ -16,13 +16,27 @@
     --bg:#0a0a0f; --surface:#13131a; --card:#1a1a24; --border:#2a2a38;
     --accent:#7c6aff; --glow:#7c6aff33; --green:#4ade80;
     --orange:#fb923c; --pink:#f472b6; --text:#f0f0f8; --muted:#888899;
-    --safe-top: env(safe-area-inset-top);
-    --safe-bottom: env(safe-area-inset-bottom);
+    --safe-top:env(safe-area-inset-top); --safe-bottom:env(safe-area-inset-bottom);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;overflow:hidden;background:var(--bg);}
   body{color:var(--text);font-family:'DM Sans','Hiragino Sans',sans-serif;display:flex;justify-content:center;}
   #app{width:100%;max-width:440px;height:100%;display:flex;flex-direction:column;overflow:hidden;padding-top:var(--safe-top);}
+
+  /* API Key Screen */
+  #screen-apikey{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px;background:var(--bg);}
+  .apikey-logo{font-size:48px;margin-bottom:8px;}
+  .apikey-title{font-size:22px;font-weight:800;margin-bottom:6px;text-align:center;}
+  .apikey-sub{font-size:12px;color:var(--muted);margin-bottom:32px;text-align:center;line-height:1.7;}
+  .apikey-box{width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;}
+  .apikey-label{font-size:12px;color:var(--muted);margin-bottom:8px;}
+  .apikey-input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text);font-size:13px;outline:none;font-family:monospace;transition:border-color 0.2s;}
+  .apikey-input:focus{border-color:var(--accent);}
+  .apikey-hint{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6;}
+  .apikey-hint a{color:var(--accent);text-decoration:none;}
+  .apikey-btn{width:100%;padding:13px 0;border-radius:11px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-weight:700;margin-top:16px;box-shadow:0 0 14px var(--glow);}
+  .apikey-btn:disabled{background:var(--border);box-shadow:none;cursor:default;}
+  .apikey-error{font-size:11px;color:var(--pink);margin-top:8px;display:none;}
 
   .header{padding:12px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;}
   .logo{font-size:17px;font-weight:800;letter-spacing:-0.5px;}
@@ -44,7 +58,6 @@
   .nav-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);display:none;}
   .nav-btn.active .nav-dot{display:block;}
 
-  /* Onboarding */
   .ob-wrap{flex:1;overflow-y:auto;padding:14px 14px 28px;-webkit-overflow-scrolling:touch;}
   .progress-bar{display:flex;gap:5px;margin-bottom:20px;}
   .progress-step{flex:1;}
@@ -81,13 +94,11 @@
   .btn-back{flex:1;padding:12px 0;border-radius:11px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-size:14px;}
   .btn-next{flex:2;padding:12px 0;border-radius:11px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-weight:700;box-shadow:0 0 14px var(--glow);}
 
-  /* Date nav */
   .date-nav{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
   .date-arrow{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
   .date-label{font-size:13px;font-weight:700;}
   .date-today{font-size:10px;color:var(--accent);text-align:center;}
 
-  /* Chat */
   .chat-messages{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;}
   .bubble-wrap{display:flex;margin-bottom:9px;}
   .bubble-wrap.user{justify-content:flex-end;}
@@ -104,7 +115,6 @@
   .send-btn{width:40px;height:40px;border-radius:11px;border:none;background:var(--border);color:var(--text);cursor:default;font-size:17px;flex-shrink:0;transition:all 0.2s;}
   .send-btn.ready{background:var(--accent);cursor:pointer;box-shadow:0 0 10px var(--glow);}
 
-  /* Food log */
   .food-entry{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:9px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
   .food-name{font-size:13px;font-weight:600;}
   .food-amount{font-size:11px;color:var(--muted);}
@@ -114,8 +124,7 @@
   .empty{text-align:center;color:var(--muted);margin-top:50px;font-size:13px;line-height:1.8;}
   .empty-icon{font-size:32px;margin-bottom:10px;}
 
-  /* History */
-  .history-day{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color 0.2s;}
+  .history-day{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;}
   .history-day:active{border-color:var(--accent);}
   .history-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
   .history-date{font-size:13px;font-weight:700;}
@@ -125,7 +134,6 @@
   .history-macros{display:flex;gap:10px;margin-top:5px;}
   .history-macro{font-size:10px;color:var(--muted);}
 
-  /* Summary */
   .circle-wrap{display:flex;justify-content:center;margin-bottom:14px;margin-top:6px;}
   .circle-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
   .circle-kcal{font-size:24px;font-weight:800;}
@@ -141,7 +149,6 @@
   .stat-val{font-size:17px;font-weight:700;}
   .achieve-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:11px 13px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;}
 
-  /* Settings */
   .setting-row{display:flex;justify-content:space-between;padding:10px 13px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:5px;}
   .setting-key{font-size:12px;color:var(--muted);}
   .setting-val{font-size:13px;font-weight:600;}
@@ -154,7 +161,25 @@
 </head>
 <body>
 <div id="app">
-  <div class="header">
+
+  <!-- API KEY SCREEN -->
+  <div id="screen-apikey" style="display:none;">
+    <div class="apikey-logo">✦</div>
+    <div class="apikey-title">NutriAI</div>
+    <div class="apikey-sub">Anthropic APIキーを入力してください。<br>キーはこのデバイスにのみ保存されます。<br>GitHubには一切送信されません。</div>
+    <div class="apikey-box">
+      <div class="apikey-label">Anthropic APIキー</div>
+      <input type="password" class="apikey-input" id="apikeyInput" placeholder="sk-ant-..." oninput="onApiKeyInput()">
+      <div class="apikey-hint">
+        キーは <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> で取得できます。
+      </div>
+      <div class="apikey-error" id="apikeyError">APIキーが正しくありません。sk-ant- から始まるキーを入力してください。</div>
+      <button class="apikey-btn" id="apikeyBtn" onclick="saveApiKey()" disabled>保存して始める</button>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header" id="mainHeader" style="display:none;">
     <div>
       <div class="logo"><span>✦</span> NutriAI</div>
       <div class="logo-sub">AI Calorie Tracker</div>
@@ -167,7 +192,7 @@
   </div>
 
   <!-- ONBOARDING -->
-  <div id="screen-ob" class="screen active" style="overflow:hidden;">
+  <div id="screen-ob" class="screen" style="overflow:hidden;">
     <div style="padding:16px 14px 4px;flex-shrink:0;">
       <div style="font-size:20px;font-weight:800;">プロフィール設定</div>
       <div style="font-size:11px;color:var(--muted);margin-top:2px;">目標体重からカロリーを自動計算します</div>
@@ -248,13 +273,14 @@
 </div>
 
 <script>
-// ── Storage ────────────────────────────────────────────────
-const PK='nutriai_profile', LK='nutriai_log', CK='nutriai_chat';
+const PK='nutriai_profile', LK='nutriai_log', CK='nutriai_chat', AK='nutriai_apikey';
 const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d;}catch{return d;}};
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d;}catch{return d;}};
+const saveRaw=(k,v)=>localStorage.setItem(k,v);
+const loadRaw=(k)=>localStorage.getItem(k)||'';
 
-// ── State ──────────────────────────────────────────────────
 let profile=load(PK,null), allLog=load(LK,{}), allChat=load(CK,{});
+let apiKey=loadRaw(AK);
 let viewDate=todayStr(), currentTab='chat', sending=false;
 let obStep=0, obData={sex:'male',age:30,height:170,weight:70,target:65,activity:'moderate'};
 
@@ -269,12 +295,10 @@ Use accurate nutrition data. Support Japanese and English food names. For non-fo
 function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function formatDate(s){const[y,m,d]=s.split('-');const days=['日','月','火','水','木','金','土'];return `${m}/${d}（${days[new Date(+y,+m-1,+d).getDay()]}）`;}
 function isToday(s){return s===todayStr();}
-
 function calcGoal(d){
   const bmr=d.sex==='male'?10*d.weight+6.25*d.height-5*d.age+5:10*d.weight+6.25*d.height-5*d.age-161;
   const mult={sedentary:1.2,light:1.375,moderate:1.55,active:1.725}[d.activity]||1.375;
-  const diff=d.target-d.weight;
-  const adj=diff<-5?-500:diff<-2?-300:diff>5?300:diff>2?200:0;
+  const diff=d.target-d.weight, adj=diff<-5?-500:diff<-2?-300:diff>5?300:diff>2?200:0;
   return Math.max(1200,Math.round(bmr*mult)+adj);
 }
 function modeLabel(d){const x=d.target-d.weight;return x<-1?'減量':x>1?'増量':'維持';}
@@ -284,22 +308,50 @@ function dayTotals(date){
   return{cal:items.reduce((s,i)=>s+i.calories,0),p:items.reduce((s,i)=>s+i.protein,0),c:items.reduce((s,i)=>s+i.carbs,0),f:items.reduce((s,i)=>s+i.fat,0)};
 }
 
+// ── API Key Screen ─────────────────────────────────────────
+function onApiKeyInput(){
+  const v=document.getElementById('apikeyInput').value.trim();
+  document.getElementById('apikeyBtn').disabled=!v.startsWith('sk-ant-');
+  document.getElementById('apikeyError').style.display='none';
+}
+function saveApiKey(){
+  const v=document.getElementById('apikeyInput').value.trim();
+  if(!v.startsWith('sk-ant-')){document.getElementById('apikeyError').style.display='block';return;}
+  saveRaw(AK,v); apiKey=v;
+  document.getElementById('screen-apikey').style.display='none';
+  showMainApp();
+}
+
+// ── App Init ───────────────────────────────────────────────
+function showMainApp(){
+  document.getElementById('mainHeader').style.display='flex';
+  if(profile){
+    document.getElementById('screen-ob').classList.remove('active');
+    document.getElementById('mainNav').style.display='flex';
+    document.getElementById('headerBadge').style.display='block';
+    document.getElementById('headerSetup').style.display='none';
+    viewDate=todayStr(); updateDateNavs(); updateHeader(); switchTab('chat');
+  } else {
+    document.getElementById('screen-ob').classList.add('active');
+    renderOb();
+  }
+}
+
 // ── Date nav ───────────────────────────────────────────────
 function changeDay(delta){
   const d=new Date(viewDate);d.setDate(d.getDate()+delta);
   const s=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  if(s>todayStr()) return;
-  viewDate=s; updateDateNavs(); updateHeader();
-  if(currentTab==='chat') renderChatForDate();
-  if(currentTab==='log')  renderLog();
-  if(currentTab==='summary') renderSummary();
+  if(s>todayStr())return;
+  viewDate=s;updateDateNavs();updateHeader();
+  if(currentTab==='chat')renderChatForDate();
+  if(currentTab==='log')renderLog();
+  if(currentTab==='summary')renderSummary();
 }
 function updateDateNavs(){
-  const lbl=formatDate(viewDate), note=isToday(viewDate)?'今日':'';
+  const lbl=formatDate(viewDate),note=isToday(viewDate)?'今日':'';
   ['chat','log','summary'].forEach(t=>{
-    const l=document.getElementById(t+'DateLabel');
-    const s=document.getElementById(t+'DateToday');
-    if(l)l.textContent=lbl; if(s)s.textContent=note;
+    const l=document.getElementById(t+'DateLabel'),s=document.getElementById(t+'DateToday');
+    if(l)l.textContent=lbl;if(s)s.textContent=note;
     const fwd=document.getElementById(t+'FwdBtn');
     if(fwd)fwd.style.opacity=isToday(viewDate)?'0.3':'1';
   });
@@ -383,14 +435,11 @@ function updateHeader(){
 
 // ── Chat ───────────────────────────────────────────────────
 function renderChatForDate(){
-  const msgs=document.getElementById('chatMessages');
-  msgs.innerHTML='';
+  const msgs=document.getElementById('chatMessages');msgs.innerHTML='';
   const history=allChat[viewDate]||[];
   if(!history.length){
     addBubbleDOM('ai',isToday(viewDate)?'こんにちは！今日食べたものを教えてください 🍽️\n例：「朝ごはんにご飯1杯と卵焼きを食べました」':`${formatDate(viewDate)}の記録です。この日の食事を追加できます。`,null,false);
-  }else{
-    history.forEach(m=>addBubbleDOM(m.role,m.text,m.raw||null,false));
-  }
+  }else{history.forEach(m=>addBubbleDOM(m.role,m.text,m.raw||null,false));}
   scrollChat();
 }
 
@@ -410,8 +459,11 @@ async function sendMessage(){
   try{
     const hist=allChat[viewDate]||[];
     const apiMsgs=hist.map(m=>({role:m.role,content:m.raw||m.text}));
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM_PROMPT,messages:apiMsgs})});
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM_PROMPT,messages:apiMsgs})
+    });
     const data=await res.json();
     const raw=data.content?.[0]?.text||'エラーが発生しました。';
     document.getElementById(tid)?.remove();
@@ -429,26 +481,19 @@ async function sendMessage(){
       display=`${textOnly}\n\n${lines}\n\n📊 合計: ${nutrition.total_calories} kcal${nutrition.message?'\n💡 '+nutrition.message:''}`;
     }
     addBubbleDOM('ai',display,raw,true);updateHeader();
-  }catch{
+  }catch(e){
     document.getElementById(tid)?.remove();
     addBubbleDOM('ai','エラーが発生しました。もう一度お試しください。',null,true);
   }
   sending=false;
 }
-
 function addBubbleDOM(role,text,raw,doSave){
   const msgs=document.getElementById('chatMessages');
-  const div=document.createElement('div');
-  div.className='bubble-wrap '+(role==='user'?'user':'ai');
+  const div=document.createElement('div');div.className='bubble-wrap '+(role==='user'?'user':'ai');
   const esc=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  div.innerHTML=role==='ai'
-    ?`<div class="ai-avatar">✦</div><div class="bubble ai">${esc}</div>`
-    :`<div class="bubble user">${esc}</div>`;
+  div.innerHTML=role==='ai'?`<div class="ai-avatar">✦</div><div class="bubble ai">${esc}</div>`:`<div class="bubble user">${esc}</div>`;
   msgs.appendChild(div);scrollChat();
-  if(doSave){
-    if(!allChat[viewDate])allChat[viewDate]=[];
-    allChat[viewDate].push({role,text,raw:raw||text});save(CK,allChat);
-  }
+  if(doSave){if(!allChat[viewDate])allChat[viewDate]=[];allChat[viewDate].push({role,text,raw:raw||text});save(CK,allChat);}
 }
 function scrollChat(){const m=document.getElementById('chatMessages');setTimeout(()=>m.scrollTop=m.scrollHeight,50);}
 
@@ -463,7 +508,7 @@ function renderLog(){
   }
   document.getElementById('logList').innerHTML=h;
 }
-function delFood(id,date){allLog[date]=(allLog[date]||[]).filter(f=>f.id!==id);save(LK,allLog);updateHeader();renderLog();if(currentTab==='summary')renderSummary();}
+function delFood(id,date){allLog[date]=(allLog[date]||[]).filter(f=>f.id!==id);save(LK,allLog);updateHeader();renderLog();}
 
 // ── History ────────────────────────────────────────────────
 function renderHistory(){
@@ -474,11 +519,9 @@ function renderHistory(){
   dates.forEach(date=>{
     const t=dayTotals(date),pct=Math.min((t.cal/goal)*100,100),over=t.cal>goal;
     h+=`<div class="history-day" onclick="jumpToDate('${date}')">
-      <div class="history-top">
-        <div><div class="history-date">${formatDate(date)}${isToday(date)?'<span style="font-size:10px;color:var(--accent);margin-left:6px;">今日</span>':''}</div>
-        <div class="history-macros"><span class="history-macro">P ${t.p}g</span><span class="history-macro">C ${t.c}g</span><span class="history-macro">F ${t.f}g</span><span class="history-macro">${(allLog[date]||[]).length}品目</span></div></div>
-        <div class="history-kcal" style="color:${over?'var(--pink)':'var(--accent)'}">${t.cal} kcal</div>
-      </div>
+      <div class="history-top"><div><div class="history-date">${formatDate(date)}${isToday(date)?'<span style="font-size:10px;color:var(--accent);margin-left:6px;">今日</span>':''}</div>
+      <div class="history-macros"><span class="history-macro">P ${t.p}g</span><span class="history-macro">C ${t.c}g</span><span class="history-macro">F ${t.f}g</span><span class="history-macro">${(allLog[date]||[]).length}品目</span></div></div>
+      <div class="history-kcal" style="color:${over?'var(--pink)':'var(--accent)'}">${t.cal} kcal</div></div>
       <div class="history-bar-wrap"><div class="history-bar" style="width:${pct}%;background:${over?'var(--pink)':'var(--accent)'}"></div></div>
     </div>`;
   });
@@ -548,7 +591,9 @@ function renderSettings(){
   </div>
   <div class="section-title">データ管理</div>
   <button class="reset-btn" onclick="resetProfile()">プロフィールを再設定する</button>
-  <button class="reset-btn" style="color:var(--pink);border-color:var(--pink);margin-top:6px;" onclick="clearAll()">すべての記録を削除する</button>`;
+  <button class="reset-btn" style="color:var(--pink);border-color:var(--pink);margin-top:6px;" onclick="clearAll()">すべての記録を削除する</button>
+  <div class="section-title">APIキー</div>
+  <button class="reset-btn" onclick="resetApiKey()">APIキーを再設定する</button>`;
   document.getElementById('settingsContent').innerHTML=h;
 }
 function resetProfile(){
@@ -560,23 +605,26 @@ function resetProfile(){
 }
 function clearAll(){
   if(!confirm('すべての食事記録を削除しますか？'))return;
-  allLog={};allChat={};save(LK,allLog);save(CK,allChat);updateHeader();
-  alert('削除しました。');
+  allLog={};allChat={};save(LK,allLog);save(CK,allChat);updateHeader();alert('削除しました。');
+}
+function resetApiKey(){
+  if(!confirm('APIキーを再設定しますか？'))return;
+  localStorage.removeItem(AK);apiKey='';
+  document.getElementById('mainHeader').style.display='none';
+  document.getElementById('mainNav').style.display='none';
+  ['chat','log','history','summary','settings'].forEach(t=>{document.getElementById('screen-'+t).classList.remove('active');document.getElementById('nav-'+t).classList.remove('active');});
+  document.getElementById('screen-apikey').style.display='flex';
 }
 
 // ── Service Worker ─────────────────────────────────────────
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
-}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
 
-// ── Init ───────────────────────────────────────────────────
-if(profile){
-  document.getElementById('screen-ob').classList.remove('active');
-  document.getElementById('mainNav').style.display='flex';
-  document.getElementById('headerBadge').style.display='block';
-  document.getElementById('headerSetup').style.display='none';
-  updateDateNavs();updateHeader();switchTab('chat');
-}else{renderOb();}
+// ── Boot ───────────────────────────────────────────────────
+if(!apiKey){
+  document.getElementById('screen-apikey').style.display='flex';
+} else {
+  showMainApp();
+}
 </script>
 </body>
 </html>
