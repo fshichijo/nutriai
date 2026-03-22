@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NutriAI">
+<meta name="theme-color" content="#7c6aff">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>NutriAI</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&display=swap');
+  :root {
+    --bg:#0a0a0f; --surface:#13131a; --card:#1a1a24; --border:#2a2a38;
+    --accent:#7c6aff; --glow:#7c6aff33; --green:#4ade80;
+    --orange:#fb923c; --pink:#f472b6; --text:#f0f0f8; --muted:#888899;
+    --safe-top: env(safe-area-inset-top);
+    --safe-bottom: env(safe-area-inset-bottom);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overflow:hidden;background:var(--bg);}
+  body{color:var(--text);font-family:'DM Sans','Hiragino Sans',sans-serif;display:flex;justify-content:center;}
+  #app{width:100%;max-width:440px;height:100%;display:flex;flex-direction:column;overflow:hidden;padding-top:var(--safe-top);}
+
+  .header{padding:12px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;}
+  .logo{font-size:17px;font-weight:800;letter-spacing:-0.5px;}
+  .logo span{color:var(--accent);}
+  .logo-sub{font-size:9px;color:var(--muted);}
+  .kcal-badge{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:5px 11px;text-align:center;cursor:pointer;}
+  .kcal-badge .val{font-size:15px;font-weight:700;}
+  .kcal-badge .sub{font-size:9px;color:var(--muted);}
+
+  .screen{flex:1;display:none;flex-direction:column;overflow:hidden;}
+  .screen.active{display:flex;}
+  .scroll{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;}
+
+  .nav{display:flex;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0;padding-bottom:var(--safe-bottom);}
+  .nav-btn{flex:1;padding:9px 4px 6px;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .nav-icon{font-size:17px;}
+  .nav-label{font-size:10px;color:var(--muted);}
+  .nav-btn.active .nav-label{color:var(--accent);font-weight:700;}
+  .nav-dot{width:4px;height:4px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);display:none;}
+  .nav-btn.active .nav-dot{display:block;}
+
+  /* Onboarding */
+  .ob-wrap{flex:1;overflow-y:auto;padding:14px 14px 28px;-webkit-overflow-scrolling:touch;}
+  .progress-bar{display:flex;gap:5px;margin-bottom:20px;}
+  .progress-step{flex:1;}
+  .progress-fill{height:3px;border-radius:2px;background:var(--border);transition:background 0.3s;}
+  .progress-fill.done{background:var(--accent);}
+  .progress-name{font-size:10px;color:var(--muted);margin-top:3px;}
+  .progress-step.done .progress-name{color:var(--accent);}
+  .ob-title{font-size:19px;font-weight:800;margin-bottom:3px;}
+  .ob-sub{font-size:11px;color:var(--muted);margin-bottom:18px;}
+  .sex-row{display:flex;gap:8px;margin-bottom:16px;}
+  .sex-btn{flex:1;padding:9px 0;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:13px;font-weight:600;transition:all 0.2s;}
+  .sex-btn.active{border-color:var(--accent);background:var(--glow);color:var(--accent);}
+  .slider-wrap{margin-bottom:16px;}
+  .slider-top{display:flex;justify-content:space-between;margin-bottom:5px;}
+  .slider-label{font-size:12px;color:var(--muted);}
+  .slider-val{font-size:13px;font-weight:700;}
+  input[type=range]{-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:var(--border);cursor:pointer;outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px #7c6aff88;}
+  .slider-range{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px;}
+  .result-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-top:8px;}
+  .result-row{display:flex;justify-content:space-between;margin-bottom:7px;}
+  .result-label{font-size:11px;color:var(--muted);}
+  .result-val{font-size:13px;font-weight:700;}
+  .kcal-big{font-size:26px;font-weight:800;color:var(--accent);}
+  .kcal-unit{font-size:12px;color:var(--muted);font-weight:400;}
+  .activity-btn{width:100%;padding:11px 13px;margin-bottom:7px;border-radius:11px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;text-align:left;transition:all 0.2s;}
+  .activity-btn.active{border-color:var(--accent);background:var(--glow);}
+  .activity-btn.active .act-label{color:var(--accent);}
+  .act-label{font-size:13px;font-weight:600;}
+  .act-desc{font-size:11px;color:var(--muted);margin-top:1px;}
+  .goal-highlight{background:var(--glow);border:1px solid var(--accent);border-radius:12px;padding:12px 14px;margin-top:8px;}
+  .goal-kcal{font-size:30px;font-weight:800;color:var(--accent);margin-top:3px;}
+  .ob-btns{display:flex;gap:8px;margin-top:18px;}
+  .btn-back{flex:1;padding:12px 0;border-radius:11px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-size:14px;}
+  .btn-next{flex:2;padding:12px 0;border-radius:11px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:14px;font-weight:700;box-shadow:0 0 14px var(--glow);}
+
+  /* Date nav */
+  .date-nav{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;}
+  .date-arrow{background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+  .date-label{font-size:13px;font-weight:700;}
+  .date-today{font-size:10px;color:var(--accent);text-align:center;}
+
+  /* Chat */
+  .chat-messages{flex:1;overflow-y:auto;padding:14px;-webkit-overflow-scrolling:touch;}
+  .bubble-wrap{display:flex;margin-bottom:9px;}
+  .bubble-wrap.user{justify-content:flex-end;}
+  .ai-avatar{width:26px;height:26px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:12px;margin-right:7px;flex-shrink:0;align-self:flex-end;box-shadow:0 0 8px var(--glow);}
+  .bubble{max-width:78%;padding:9px 13px;font-size:13px;line-height:1.6;white-space:pre-wrap;}
+  .bubble.user{background:var(--accent);border-radius:16px 16px 4px 16px;color:#fff;box-shadow:0 0 12px var(--glow);}
+  .bubble.ai{background:var(--card);border:1px solid var(--border);border-radius:16px 16px 16px 4px;}
+  .typing{display:flex;gap:4px;padding:9px 13px;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);}
+  @keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+  .chat-input-wrap{padding:9px 11px;border-top:1px solid var(--border);background:var(--surface);display:flex;gap:7px;align-items:flex-end;flex-shrink:0;padding-bottom:calc(9px + var(--safe-bottom));}
+  textarea{flex:1;background:var(--card);border:1px solid var(--border);border-radius:13px;padding:9px 13px;color:var(--text);font-size:13px;resize:none;line-height:1.5;font-family:inherit;outline:none;transition:border-color 0.2s;}
+  textarea:focus{border-color:var(--accent);}
+  .send-btn{width:40px;height:40px;border-radius:11px;border:none;background:var(--border);color:var(--text);cursor:default;font-size:17px;flex-shrink:0;transition:all 0.2s;}
+  .send-btn.ready{background:var(--accent);cursor:pointer;box-shadow:0 0 10px var(--glow);}
+
+  /* Food log */
+  .food-entry{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:9px 13px;margin-bottom:7px;display:flex;justify-content:space-between;align-items:center;}
+  .food-name{font-size:13px;font-weight:600;}
+  .food-amount{font-size:11px;color:var(--muted);}
+  .food-kcal{font-size:13px;color:var(--accent);font-weight:700;text-align:right;}
+  .food-macro{font-size:10px;color:var(--muted);text-align:right;}
+  .del-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:19px;margin-left:9px;line-height:1;padding:0;}
+  .empty{text-align:center;color:var(--muted);margin-top:50px;font-size:13px;line-height:1.8;}
+  .empty-icon{font-size:32px;margin-bottom:10px;}
+
+  /* History */
+  .history-day{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color 0.2s;}
+  .history-day:active{border-color:var(--accent);}
+  .history-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .history-date{font-size:13px;font-weight:700;}
+  .history-kcal{font-size:14px;font-weight:800;}
+  .history-bar-wrap{background:var(--border);border-radius:3px;height:4px;overflow:hidden;}
+  .history-bar{height:100%;border-radius:3px;}
+  .history-macros{display:flex;gap:10px;margin-top:5px;}
+  .history-macro{font-size:10px;color:var(--muted);}
+
+  /* Summary */
+  .circle-wrap{display:flex;justify-content:center;margin-bottom:14px;margin-top:6px;}
+  .circle-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;}
+  .circle-kcal{font-size:24px;font-weight:800;}
+  .circle-goal-lbl{font-size:10px;color:var(--muted);}
+  .macro-row{margin-bottom:7px;}
+  .macro-top{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px;}
+  .macro-top span:last-child{color:var(--text);}
+  .macro-track{background:var(--border);border-radius:4px;height:5px;overflow:hidden;}
+  .macro-fill{height:100%;border-radius:4px;}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:11px 13px;}
+  .stat-label{font-size:10px;color:var(--muted);margin-bottom:3px;}
+  .stat-val{font-size:17px;font-weight:700;}
+  .achieve-card{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:11px 13px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;}
+
+  /* Settings */
+  .setting-row{display:flex;justify-content:space-between;padding:10px 13px;background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:5px;}
+  .setting-key{font-size:12px;color:var(--muted);}
+  .setting-val{font-size:13px;font-weight:600;}
+  .reset-btn{width:100%;padding:12px 0;border-radius:11px;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;font-size:13px;margin-top:6px;}
+  .section-title{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px;margin-top:14px;}
+
+  ::-webkit-scrollbar{width:3px;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div>
+      <div class="logo"><span>✦</span> NutriAI</div>
+      <div class="logo-sub">AI Calorie Tracker</div>
+    </div>
+    <div class="kcal-badge" id="headerBadge" onclick="switchTab('summary')" style="display:none">
+      <div class="val" id="headerKcal">0</div>
+      <div class="sub" id="headerGoal">/ 2000 kcal</div>
+    </div>
+    <div id="headerSetup" style="font-size:11px;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:8px;padding:5px 10px;">初期設定中</div>
+  </div>
+
+  <!-- ONBOARDING -->
+  <div id="screen-ob" class="screen active" style="overflow:hidden;">
+    <div style="padding:16px 14px 4px;flex-shrink:0;">
+      <div style="font-size:20px;font-weight:800;">プロフィール設定</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px;">目標体重からカロリーを自動計算します</div>
+    </div>
+    <div class="ob-wrap" id="obWrap"></div>
+  </div>
+
+  <!-- CHAT -->
+  <div id="screen-chat" class="screen">
+    <div class="date-nav">
+      <button class="date-arrow" onclick="changeDay(-1)">‹</button>
+      <div style="text-align:center;">
+        <div class="date-label" id="chatDateLabel"></div>
+        <div class="date-today" id="chatDateToday"></div>
+      </div>
+      <button class="date-arrow" id="chatFwdBtn" onclick="changeDay(1)">›</button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-wrap">
+      <textarea id="chatInput" rows="2" placeholder="例：昼にラーメンを食べました"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">↑</button>
+    </div>
+  </div>
+
+  <!-- LOG -->
+  <div id="screen-log" class="screen">
+    <div class="date-nav">
+      <button class="date-arrow" onclick="changeDay(-1)">‹</button>
+      <div style="text-align:center;">
+        <div class="date-label" id="logDateLabel"></div>
+        <div class="date-today" id="logDateToday"></div>
+      </div>
+      <button class="date-arrow" id="logFwdBtn" onclick="changeDay(1)">›</button>
+    </div>
+    <div class="scroll" id="logList"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="screen-history" class="screen">
+    <div class="scroll" id="historyContent"></div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div id="screen-summary" class="screen">
+    <div class="date-nav">
+      <button class="date-arrow" onclick="changeDay(-1)">‹</button>
+      <div style="text-align:center;">
+        <div class="date-label" id="summaryDateLabel"></div>
+        <div class="date-today" id="summaryDateToday"></div>
+      </div>
+      <button class="date-arrow" id="summaryFwdBtn" onclick="changeDay(1)">›</button>
+    </div>
+    <div class="scroll" id="summaryContent"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div id="screen-settings" class="screen">
+    <div class="scroll" id="settingsContent"></div>
+  </div>
+
+  <nav class="nav" id="mainNav" style="display:none;">
+    <button class="nav-btn active" onclick="switchTab('chat')" id="nav-chat">
+      <span class="nav-icon">💬</span><span class="nav-label">今日</span><span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('log')" id="nav-log">
+      <span class="nav-icon">📋</span><span class="nav-label">記録</span><span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('history')" id="nav-history">
+      <span class="nav-icon">📅</span><span class="nav-label">履歴</span><span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('summary')" id="nav-summary">
+      <span class="nav-icon">📊</span><span class="nav-label">分析</span><span class="nav-dot"></span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('settings')" id="nav-settings">
+      <span class="nav-icon">⚙️</span><span class="nav-label">設定</span><span class="nav-dot"></span>
+    </button>
+  </nav>
+</div>
+
+<script>
+// ── Storage ────────────────────────────────────────────────
+const PK='nutriai_profile', LK='nutriai_log', CK='nutriai_chat';
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))||d;}catch{return d;}};
+
+// ── State ──────────────────────────────────────────────────
+let profile=load(PK,null), allLog=load(LK,{}), allChat=load(CK,{});
+let viewDate=todayStr(), currentTab='chat', sending=false;
+let obStep=0, obData={sex:'male',age:30,height:170,weight:70,target:65,activity:'moderate'};
+
+const SYSTEM_PROMPT=`You are a nutrition AI assistant. When the user describes food, respond with:
+1. A short friendly message in Japanese
+2. A JSON block like this:
+\`\`\`json
+{"items":[{"name":"food name","calories":200,"protein":10,"carbs":25,"fat":8,"amount":"1 serving"}],"total_calories":200,"total_protein":10,"total_carbs":25,"total_fat":8,"message":"One nutrition tip in Japanese."}
+\`\`\`
+Use accurate nutrition data. Support Japanese and English food names. For non-food questions, answer in Japanese without the JSON block.`;
+
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function formatDate(s){const[y,m,d]=s.split('-');const days=['日','月','火','水','木','金','土'];return `${m}/${d}（${days[new Date(+y,+m-1,+d).getDay()]}）`;}
+function isToday(s){return s===todayStr();}
+
+function calcGoal(d){
+  const bmr=d.sex==='male'?10*d.weight+6.25*d.height-5*d.age+5:10*d.weight+6.25*d.height-5*d.age-161;
+  const mult={sedentary:1.2,light:1.375,moderate:1.55,active:1.725}[d.activity]||1.375;
+  const diff=d.target-d.weight;
+  const adj=diff<-5?-500:diff<-2?-300:diff>5?300:diff>2?200:0;
+  return Math.max(1200,Math.round(bmr*mult)+adj);
+}
+function modeLabel(d){const x=d.target-d.weight;return x<-1?'減量':x>1?'増量':'維持';}
+function modeColor(d){const x=d.target-d.weight;return x<-1?'var(--pink)':x>1?'var(--green)':'var(--accent)';}
+function dayTotals(date){
+  const items=allLog[date]||[];
+  return{cal:items.reduce((s,i)=>s+i.calories,0),p:items.reduce((s,i)=>s+i.protein,0),c:items.reduce((s,i)=>s+i.carbs,0),f:items.reduce((s,i)=>s+i.fat,0)};
+}
+
+// ── Date nav ───────────────────────────────────────────────
+function changeDay(delta){
+  const d=new Date(viewDate);d.setDate(d.getDate()+delta);
+  const s=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  if(s>todayStr()) return;
+  viewDate=s; updateDateNavs(); updateHeader();
+  if(currentTab==='chat') renderChatForDate();
+  if(currentTab==='log')  renderLog();
+  if(currentTab==='summary') renderSummary();
+}
+function updateDateNavs(){
+  const lbl=formatDate(viewDate), note=isToday(viewDate)?'今日':'';
+  ['chat','log','summary'].forEach(t=>{
+    const l=document.getElementById(t+'DateLabel');
+    const s=document.getElementById(t+'DateToday');
+    if(l)l.textContent=lbl; if(s)s.textContent=note;
+    const fwd=document.getElementById(t+'FwdBtn');
+    if(fwd)fwd.style.opacity=isToday(viewDate)?'0.3':'1';
+  });
+}
+
+// ── Onboarding ─────────────────────────────────────────────
+function renderOb(){
+  const goal=calcGoal(obData),diff=obData.target-obData.weight;
+  const steps=['基本情報','体重目標','活動量'];
+  let h=`<div class="progress-bar">`;
+  steps.forEach((s,i)=>{h+=`<div class="progress-step ${i<=obStep?'done':''}"><div class="progress-fill ${i<=obStep?'done':''}"></div><div class="progress-name">${s}</div></div>`;});
+  h+=`</div>`;
+  if(obStep===0){
+    h+=`<div class="ob-title">基本情報</div><div class="ob-sub">Mifflin-St Jeor式でカロリーを計算します</div>
+    <div style="margin-bottom:16px;"><div class="slider-label" style="margin-bottom:7px;">性別</div>
+    <div class="sex-row"><button class="sex-btn ${obData.sex==='male'?'active':''}" onclick="setSex('male')">男性</button><button class="sex-btn ${obData.sex==='female'?'active':''}" onclick="setSex('female')">女性</button></div></div>
+    ${sld('age','年齢',obData.age,15,80,'歳')}${sld('height','身長',obData.height,140,200,'cm')}${sld('weight','現在の体重',obData.weight,40,150,'kg')}`;
+  }else if(obStep===1){
+    h+=`<div class="ob-title">体重目標</div><div class="ob-sub">目標体重から1日の摂取カロリーを設定します</div>
+    ${sld('target','目標体重',obData.target,40,150,'kg')}
+    <div class="result-card">
+      <div class="result-row"><span class="result-label">目標モード</span><span class="result-val" style="color:${modeColor(obData)}">${modeLabel(obData)}</span></div>
+      <div class="result-row" style="margin-bottom:0"><span class="result-label">差分</span><span class="result-val">${diff>0?'+':''}${diff} kg</span></div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:9px 0;">
+      <div style="font-size:10px;color:var(--muted);margin-bottom:3px;">推定目標カロリー</div>
+      <span class="kcal-big">${goal}</span> <span class="kcal-unit">kcal/日</span>
+    </div>`;
+  }else{
+    h+=`<div class="ob-title">活動量</div><div class="ob-sub">普段の生活スタイルを選んでください</div>
+    ${act('sedentary','ほぼ座り仕事','デスクワーク中心・運動なし')}${act('light','軽い運動あり','週1〜2回の軽い運動')}${act('moderate','適度に活動','週3〜5回の運動')}${act('active','活発','毎日ハードな運動・肉体労働')}
+    <div class="goal-highlight">
+      <div style="font-size:10px;color:var(--muted);">あなたの1日の目標カロリー</div>
+      <div class="goal-kcal">${goal} <span style="font-size:13px;color:var(--muted);font-weight:400;">kcal</span></div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px;">${modeLabel(obData)}モード · ${obData.weight}kg → ${obData.target}kg</div>
+    </div>`;
+  }
+  h+=`<div class="ob-btns">${obStep>0?'<button class="btn-back" onclick="obBack()">戻る</button>':''}<button class="btn-next" onclick="obNext()">${obStep<2?'次へ →':'スタート 🚀'}</button></div>`;
+  document.getElementById('obWrap').innerHTML=h;
+}
+function sld(k,l,v,min,max,u){return `<div class="slider-wrap"><div class="slider-top"><span class="slider-label">${l}</span><span class="slider-val" id="sv-${k}">${v} ${u}</span></div><input type="range" min="${min}" max="${max}" value="${v}" oninput="upSld('${k}','${u}',this.value)"><div class="slider-range"><span>${min}</span><span>${max}</span></div></div>`;}
+function act(v,l,d){return `<button class="activity-btn ${obData.activity===v?'active':''}" onclick="setAct('${v}')"><div class="act-label">${l}</div><div class="act-desc">${d}</div></button>`;}
+function setSex(v){obData.sex=v;renderOb();}
+function setAct(v){obData.activity=v;renderOb();}
+function upSld(k,u,v){obData[k]=Number(v);const e=document.getElementById('sv-'+k);if(e)e.textContent=v+' '+u;if(obStep>=1)renderOb();}
+function obBack(){obStep--;renderOb();}
+function obNext(){
+  if(obStep<2){obStep++;renderOb();return;}
+  profile={...obData,calorieGoal:calcGoal(obData)};save(PK,profile);
+  document.getElementById('screen-ob').classList.remove('active');
+  document.getElementById('mainNav').style.display='flex';
+  document.getElementById('headerBadge').style.display='block';
+  document.getElementById('headerSetup').style.display='none';
+  viewDate=todayStr();updateDateNavs();switchTab('chat');updateHeader();
+}
+
+// ── Tabs ───────────────────────────────────────────────────
+function switchTab(tab){
+  ['chat','log','history','summary','settings'].forEach(t=>{
+    document.getElementById('screen-'+t).classList.remove('active');
+    document.getElementById('nav-'+t).classList.remove('active');
+  });
+  document.getElementById('screen-'+tab).classList.add('active');
+  document.getElementById('nav-'+tab).classList.add('active');
+  currentTab=tab;
+  if(tab==='chat')renderChatForDate();
+  if(tab==='log')renderLog();
+  if(tab==='history')renderHistory();
+  if(tab==='summary')renderSummary();
+  if(tab==='settings')renderSettings();
+}
+
+// ── Header ─────────────────────────────────────────────────
+function updateHeader(){
+  if(!profile)return;
+  const t=dayTotals(viewDate);
+  const el=document.getElementById('headerKcal');
+  el.textContent=t.cal;
+  el.style.color=t.cal>profile.calorieGoal?'var(--pink)':'var(--accent)';
+  document.getElementById('headerGoal').textContent='/ '+profile.calorieGoal+' kcal';
+}
+
+// ── Chat ───────────────────────────────────────────────────
+function renderChatForDate(){
+  const msgs=document.getElementById('chatMessages');
+  msgs.innerHTML='';
+  const history=allChat[viewDate]||[];
+  if(!history.length){
+    addBubbleDOM('ai',isToday(viewDate)?'こんにちは！今日食べたものを教えてください 🍽️\n例：「朝ごはんにご飯1杯と卵焼きを食べました」':`${formatDate(viewDate)}の記録です。この日の食事を追加できます。`,null,false);
+  }else{
+    history.forEach(m=>addBubbleDOM(m.role,m.text,m.raw||null,false));
+  }
+  scrollChat();
+}
+
+const chatInput=document.getElementById('chatInput');
+chatInput.addEventListener('input',()=>{document.getElementById('sendBtn').classList.toggle('ready',chatInput.value.trim().length>0);});
+chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+
+async function sendMessage(){
+  const text=chatInput.value.trim();
+  if(!text||sending)return;
+  sending=true;chatInput.value='';document.getElementById('sendBtn').classList.remove('ready');
+  addBubbleDOM('user',text,null,true);
+  const tid='t'+Date.now();
+  document.getElementById('chatMessages').insertAdjacentHTML('beforeend',
+    `<div class="bubble-wrap ai" id="${tid}"><div class="ai-avatar">✦</div><div class="typing"><div class="dot" style="animation:blink 1.2s ease 0s infinite"></div><div class="dot" style="animation:blink 1.2s ease .2s infinite"></div><div class="dot" style="animation:blink 1.2s ease .4s infinite"></div></div></div>`);
+  scrollChat();
+  try{
+    const hist=allChat[viewDate]||[];
+    const apiMsgs=hist.map(m=>({role:m.role,content:m.raw||m.text}));
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM_PROMPT,messages:apiMsgs})});
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'エラーが発生しました。';
+    document.getElementById(tid)?.remove();
+    const match=raw.match(/```json\s*([\s\S]*?)```/);
+    let nutrition=null;
+    if(match){try{nutrition=JSON.parse(match[1]);}catch{}}
+    const textOnly=raw.replace(/```json[\s\S]*?```/g,'').trim();
+    let display=textOnly;
+    if(nutrition?.items){
+      const ts=Date.now();
+      if(!allLog[viewDate])allLog[viewDate]=[];
+      allLog[viewDate].push(...nutrition.items.map((it,i)=>({...it,id:`${ts}-${i}`})));
+      save(LK,allLog);
+      const lines=nutrition.items.map(it=>`• ${it.name} — ${it.calories} kcal`).join('\n');
+      display=`${textOnly}\n\n${lines}\n\n📊 合計: ${nutrition.total_calories} kcal${nutrition.message?'\n💡 '+nutrition.message:''}`;
+    }
+    addBubbleDOM('ai',display,raw,true);updateHeader();
+  }catch{
+    document.getElementById(tid)?.remove();
+    addBubbleDOM('ai','エラーが発生しました。もう一度お試しください。',null,true);
+  }
+  sending=false;
+}
+
+function addBubbleDOM(role,text,raw,doSave){
+  const msgs=document.getElementById('chatMessages');
+  const div=document.createElement('div');
+  div.className='bubble-wrap '+(role==='user'?'user':'ai');
+  const esc=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  div.innerHTML=role==='ai'
+    ?`<div class="ai-avatar">✦</div><div class="bubble ai">${esc}</div>`
+    :`<div class="bubble user">${esc}</div>`;
+  msgs.appendChild(div);scrollChat();
+  if(doSave){
+    if(!allChat[viewDate])allChat[viewDate]=[];
+    allChat[viewDate].push({role,text,raw:raw||text});save(CK,allChat);
+  }
+}
+function scrollChat(){const m=document.getElementById('chatMessages');setTimeout(()=>m.scrollTop=m.scrollHeight,50);}
+
+// ── Log ────────────────────────────────────────────────────
+function renderLog(){
+  const items=allLog[viewDate]||[],t=dayTotals(viewDate);
+  let h='';
+  if(!items.length){h=`<div class="empty"><div class="empty-icon">🍽️</div>この日の記録はありません<br>チャットで食事を入力してください</div>`;}
+  else{
+    h+=`<div style="font-size:11px;color:var(--muted);margin-bottom:10px;">${items.length}件 · 合計 <span style="color:var(--accent);font-weight:700;">${t.cal} kcal</span></div>`;
+    items.forEach(item=>{h+=`<div class="food-entry"><div><div class="food-name">${item.name}</div><div class="food-amount">${item.amount}</div></div><div style="display:flex;align-items:center;"><div><div class="food-kcal">${item.calories} kcal</div><div class="food-macro">P${item.protein} C${item.carbs} F${item.fat}</div></div><button class="del-btn" onclick="delFood('${item.id}','${viewDate}')">×</button></div></div>`;});
+  }
+  document.getElementById('logList').innerHTML=h;
+}
+function delFood(id,date){allLog[date]=(allLog[date]||[]).filter(f=>f.id!==id);save(LK,allLog);updateHeader();renderLog();if(currentTab==='summary')renderSummary();}
+
+// ── History ────────────────────────────────────────────────
+function renderHistory(){
+  const goal=profile?.calorieGoal||2000;
+  const dates=Object.keys(allLog).filter(d=>(allLog[d]||[]).length>0).sort((a,b)=>b.localeCompare(a));
+  if(!dates.length){document.getElementById('historyContent').innerHTML=`<div class="empty"><div class="empty-icon">📅</div>記録がまだありません<br>チャットで食事を入力すると<br>ここに履歴が表示されます</div>`;return;}
+  let h=`<div style="font-size:11px;color:var(--muted);margin-bottom:12px;">${dates.length}日分の記録</div>`;
+  dates.forEach(date=>{
+    const t=dayTotals(date),pct=Math.min((t.cal/goal)*100,100),over=t.cal>goal;
+    h+=`<div class="history-day" onclick="jumpToDate('${date}')">
+      <div class="history-top">
+        <div><div class="history-date">${formatDate(date)}${isToday(date)?'<span style="font-size:10px;color:var(--accent);margin-left:6px;">今日</span>':''}</div>
+        <div class="history-macros"><span class="history-macro">P ${t.p}g</span><span class="history-macro">C ${t.c}g</span><span class="history-macro">F ${t.f}g</span><span class="history-macro">${(allLog[date]||[]).length}品目</span></div></div>
+        <div class="history-kcal" style="color:${over?'var(--pink)':'var(--accent)'}">${t.cal} kcal</div>
+      </div>
+      <div class="history-bar-wrap"><div class="history-bar" style="width:${pct}%;background:${over?'var(--pink)':'var(--accent)'}"></div></div>
+    </div>`;
+  });
+  document.getElementById('historyContent').innerHTML=h;
+}
+function jumpToDate(date){viewDate=date;updateDateNavs();updateHeader();switchTab('chat');}
+
+// ── Summary ────────────────────────────────────────────────
+function renderSummary(){
+  if(!profile)return;
+  const t=dayTotals(viewDate),goal=profile.calorieGoal;
+  const pct=Math.min(t.cal/goal,1),r=52,circ=2*Math.PI*r,dash=circ*pct;
+  const remaining=goal-t.cal,over=remaining<0;
+  const maxP=Math.round(goal*0.3/4),maxC=Math.round(goal*0.5/4),maxF=Math.round(goal*0.25/9);
+  document.getElementById('summaryContent').innerHTML=`
+    <div class="circle-wrap"><div style="position:relative;width:120px;height:120px;">
+      <svg width="120" height="120" style="transform:rotate(-90deg)">
+        <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--border)" stroke-width="9"/>
+        <circle cx="60" cy="60" r="${r}" fill="none" stroke="${over?'var(--pink)':'var(--accent)'}" stroke-width="9"
+          stroke-dasharray="${dash} ${circ}" stroke-linecap="round" style="filter:drop-shadow(0 0 5px var(--accent))"/>
+      </svg>
+      <div class="circle-center"><div class="circle-kcal">${t.cal}</div><div class="circle-goal-lbl">/ ${goal} kcal</div></div>
+    </div></div>
+    <div style="text-align:center;font-size:11px;font-weight:600;color:${over?'var(--pink)':'var(--green)'};margin-bottom:14px;margin-top:-2px;">${over?`${Math.abs(remaining)} kcal オーバー`:`あと ${remaining} kcal`}</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;font-weight:600;">マクロ栄養素</div>
+      ${mb('タンパク質',t.p,maxP,'var(--green)')}${mb('炭水化物',t.c,maxC,'var(--orange)')}${mb('脂質',t.f,maxF,'var(--pink)')}
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">カロリー</div><div class="stat-val" style="color:var(--accent)">${t.cal} kcal</div></div>
+      <div class="stat-card"><div class="stat-label">記録数</div><div class="stat-val" style="color:var(--green)">${(allLog[viewDate]||[]).length} 品目</div></div>
+      <div class="stat-card"><div class="stat-label">タンパク質</div><div class="stat-val" style="color:var(--green)">${t.p}g</div></div>
+      <div class="stat-card"><div class="stat-label">炭水化物</div><div class="stat-val" style="color:var(--orange)">${t.c}g</div></div>
+    </div>
+    <div class="achieve-card"><span style="font-size:12px;color:var(--muted);">目標達成率</span><span style="font-size:19px;font-weight:800;color:${over?'var(--pink)':'var(--accent)'}">${Math.round((t.cal/goal)*100)}%</span></div>
+    <div class="section-title" style="margin-top:18px;">📅 直近7日間</div>${weekChart()}`;
+}
+function mb(l,v,max,color){const pct=Math.min((v/max)*100,100);return `<div class="macro-row"><div class="macro-top"><span>${l}</span><span>${v}g</span></div><div class="macro-track"><div class="macro-fill" style="width:${pct}%;background:${color}"></div></div></div>`;}
+function weekChart(){
+  const goal=profile?.calorieGoal||2000;
+  let h=`<div style="display:flex;gap:6px;align-items:flex-end;height:70px;margin-bottom:6px;">`;
+  for(let i=6;i>=0;i--){
+    const d=new Date();d.setDate(d.getDate()-i);
+    const s=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const t=dayTotals(s),pct=t.cal>0?Math.min((t.cal/goal)*100,100):0,over=t.cal>goal,isV=s===viewDate;
+    const days=['日','月','火','水','木','金','土'];
+    h+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <div style="font-size:9px;color:${over?'var(--pink)':'var(--muted)'};">${t.cal>0?t.cal:''}</div>
+      <div style="width:100%;height:${Math.max(pct*0.55,2)}px;background:${over?'var(--pink)':isV?'var(--accent)':'#3a3a50'};border-radius:3px 3px 0 0;min-height:2px;"></div>
+      <div style="font-size:9px;color:${isV?'var(--accent)':'var(--muted)'};">${days[d.getDay()]}</div>
+    </div>`;
+  }
+  return h+`</div>`;
+}
+
+// ── Settings ───────────────────────────────────────────────
+function renderSettings(){
+  if(!profile)return;
+  const aL={sedentary:'ほぼ座り仕事',light:'軽い運動あり',moderate:'適度に活動',active:'活発'};
+  const rows=[['性別',profile.sex==='male'?'男性':'女性'],['年齢',profile.age+'歳'],['身長',profile.height+'cm'],['現在体重',profile.weight+'kg'],['目標体重',profile.target+'kg'],['活動量',aL[profile.activity]]];
+  let h=`<div style="font-size:15px;font-weight:800;margin-bottom:3px;">現在の設定</div><div style="font-size:11px;color:var(--muted);margin-bottom:14px;">プロフィールと目標カロリー</div>`;
+  rows.forEach(([k,v])=>{h+=`<div class="setting-row"><span class="setting-key">${k}</span><span class="setting-val">${v}</span></div>`;});
+  h+=`<div style="background:var(--glow);border:1px solid var(--accent);border-radius:11px;padding:12px 14px;margin-top:8px;margin-bottom:14px;">
+    <div style="font-size:10px;color:var(--muted);">1日の目標カロリー</div>
+    <div style="font-size:28px;font-weight:800;color:var(--accent);">${profile.calorieGoal} <span style="font-size:12px;color:var(--muted);">kcal</span></div>
+    <div style="font-size:10px;color:var(--muted);margin-top:3px;">${modeLabel({target:profile.target,weight:profile.weight})}モード</div>
+  </div>
+  <div class="section-title">データ管理</div>
+  <button class="reset-btn" onclick="resetProfile()">プロフィールを再設定する</button>
+  <button class="reset-btn" style="color:var(--pink);border-color:var(--pink);margin-top:6px;" onclick="clearAll()">すべての記録を削除する</button>`;
+  document.getElementById('settingsContent').innerHTML=h;
+}
+function resetProfile(){
+  if(!confirm('プロフィールを再設定しますか？記録は保持されます。'))return;
+  profile=null;localStorage.removeItem(PK);obStep=0;obData={sex:'male',age:30,height:170,weight:70,target:65,activity:'moderate'};
+  ['chat','log','history','summary','settings'].forEach(t=>{document.getElementById('screen-'+t).classList.remove('active');document.getElementById('nav-'+t).classList.remove('active');});
+  document.getElementById('mainNav').style.display='none';document.getElementById('headerBadge').style.display='none';document.getElementById('headerSetup').style.display='block';
+  document.getElementById('screen-ob').classList.add('active');renderOb();
+}
+function clearAll(){
+  if(!confirm('すべての食事記録を削除しますか？'))return;
+  allLog={};allChat={};save(LK,allLog);save(CK,allChat);updateHeader();
+  alert('削除しました。');
+}
+
+// ── Service Worker ─────────────────────────────────────────
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+// ── Init ───────────────────────────────────────────────────
+if(profile){
+  document.getElementById('screen-ob').classList.remove('active');
+  document.getElementById('mainNav').style.display='flex';
+  document.getElementById('headerBadge').style.display='block';
+  document.getElementById('headerSetup').style.display='none';
+  updateDateNavs();updateHeader();switchTab('chat');
+}else{renderOb();}
+</script>
+</body>
+</html>
