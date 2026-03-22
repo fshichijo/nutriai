@@ -123,6 +123,8 @@
   textarea{flex:1;background:var(--card);border:1px solid var(--border);border-radius:13px;padding:9px 13px;color:var(--text);font-size:13px;resize:none;line-height:1.5;font-family:inherit;outline:none;transition:border-color 0.2s;}
   textarea:focus{border-color:var(--accent);}
   .send-btn{width:40px;height:40px;border-radius:11px;border:none;background:var(--border);color:var(--muted);cursor:default;font-size:17px;flex-shrink:0;transition:all 0.2s;}
+  .mode-btn{flex:1;padding:5px 8px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;text-align:center;}
+  .mode-btn.mode-active{border-color:var(--accent);background:#c9873a18;color:var(--accent);}
   .send-btn.ready{background:var(--accent);color:#fff;cursor:pointer;}
 
   /* Food/Exercise log */
@@ -226,9 +228,30 @@
   <!-- CHAT -->
   <div id="screen-chat" class="screen">
     <div class="chat-messages" id="chatMessages"></div>
-    <div class="chat-input-wrap">
-      <textarea id="chatInput" rows="2" placeholder="食事：ご飯1杯と卵焼き&#10;運動：30分ウォーキング"></textarea>
+    <!-- AI input mode -->
+    <div id="inputModeAI" class="chat-input-wrap">
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+        <textarea id="chatInput" rows="2" placeholder="食事：ご飯1杯と卵焼き&#10;運動：30分ウォーキング"></textarea>
+        <div style="display:flex;gap:6px;">
+          <button class="mode-btn mode-active" id="btnModeAI" onclick="setInputMode('ai')">🤖 AIに聞く</button>
+          <button class="mode-btn" id="btnModeDirect" onclick="setInputMode('direct')">📝 カロリー直入力</button>
+        </div>
+      </div>
       <button class="send-btn" id="sendBtn" onclick="sendMessage()">↑</button>
+    </div>
+    <!-- Direct input mode -->
+    <div id="inputModeDirect" class="chat-input-wrap" style="display:none;">
+      <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="directName" placeholder="品名（例：幕の内弁当）" style="flex:2;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 11px;color:var(--text);font-size:13px;outline:none;font-family:inherit;">
+          <input type="number" id="directKcal" placeholder="kcal" style="flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 11px;color:var(--text);font-size:13px;outline:none;font-family:inherit;min-width:0;">
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="mode-btn" id="btnModeAI2" onclick="setInputMode('ai')">🤖 AIに聞く</button>
+          <button class="mode-btn mode-active" id="btnModeDirect2" onclick="setInputMode('direct')">📝 カロリー直入力</button>
+        </div>
+      </div>
+      <button class="send-btn ready" onclick="sendDirect()">↑</button>
     </div>
   </div>
 
@@ -468,6 +491,42 @@ function renderChatForDate(){
 const chatInput=document.getElementById('chatInput');
 chatInput.addEventListener('input',()=>{document.getElementById('sendBtn').classList.toggle('ready',chatInput.value.trim().length>0);});
 chatInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}});
+
+// ── Input mode toggle ──────────────────────────────────────
+function setInputMode(mode){
+  const ai=document.getElementById('inputModeAI');
+  const direct=document.getElementById('inputModeDirect');
+  if(mode==='ai'){
+    ai.style.display='flex';direct.style.display='none';
+  } else {
+    ai.style.display='none';direct.style.display='flex';
+    document.getElementById('directName').focus();
+  }
+}
+
+// ── Direct calorie entry ───────────────────────────────────
+function sendDirect(){
+  const name=document.getElementById('directName').value.trim();
+  const kcal=parseInt(document.getElementById('directKcal').value);
+  if(!name||!kcal||kcal<=0) return;
+  const t=timeStr();
+  const ts=Date.now();
+  const item={name,calories:kcal,protein:0,carbs:0,fat:0,amount:'直接入力',id:`${ts}-0`,type:'food'};
+  if(!allLog[viewDate])allLog[viewDate]=[];
+  allLog[viewDate].push(item);
+  save(LK,allLog);
+  const display=`📝 ${name} — ${kcal} kcal を記録しました`;
+  addBubbleDOM('user',`${name} ${kcal}kcal`,null,true,t,null);
+  addBubbleDOM('ai',display,null,true,timeStr(),'food');
+  document.getElementById('directName').value='';
+  document.getElementById('directKcal').value='';
+  updateHeader();
+}
+
+// direct input enter key
+document.getElementById('directKcal').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();sendDirect();}
+});
 
 async function sendMessage(){
   const text=chatInput.value.trim();
