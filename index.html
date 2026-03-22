@@ -410,7 +410,7 @@ async function sendMessage(){
   try{
     const hist=allChat[viewDate]||[];
     const apiMsgs=hist.map(m=>({role:m.role,content:m.raw||m.text}));
-    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01'},
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM_PROMPT,messages:apiMsgs})});
     const data=await res.json();
     const raw=data.content?.[0]?.text||'エラーが発生しました。';
