@@ -554,7 +554,7 @@ async function sendMessage(){
     const res=await fetch('https://nutriai-proxydeploy.f-shichijo.workers.dev',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM_PROMPT,messages:apiMsgs})
+      body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:1000,system:SYSTEM_PROMPT,messages:apiMsgs})
     });
     const data=await res.json();
     const raw=data.content?.[0]?.text||'エラーが発生しました。';
