@@ -39,7 +39,8 @@
   .apikey-btn:disabled{background:var(--border);cursor:default;color:var(--muted);}
   .apikey-error{font-size:11px;color:var(--pink);margin-top:8px;display:none;}
 
-  .header{padding:7px 14px 6px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;box-shadow:0 1px 4px #c9873a11;}
+  .header{padding:6px 12px 5px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;box-shadow:0 1px 4px #c9873a11;}
+  .date-arrow-sm{background:var(--card);border:1px solid var(--border);color:var(--muted);border-radius:6px;width:22px;height:22px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;}
   .logo{font-size:15px;font-weight:800;letter-spacing:-0.5px;color:var(--text);}
   .logo span{color:var(--accent);}
   .logo-sub{font-size:8px;color:var(--muted);}
@@ -195,17 +196,22 @@
     </div>
   </div>
 
-  <!-- HEADER -->
+  <!-- HEADER: logo + date combined in one bar -->
   <div class="header" id="mainHeader" style="display:none;">
-    <div>
-      <div class="logo"><span>✦</span> NutriAI</div>
-      <div class="logo-sub">AI Calorie Tracker</div>
+    <div class="logo"><span>✦</span> NutriAI</div>
+    <div id="headerDateNav" style="display:flex;align-items:center;gap:6px;">
+      <button class="date-arrow-sm" onclick="changeDay(-1)">‹</button>
+      <div style="text-align:center;min-width:80px;">
+        <div style="font-size:12px;font-weight:700;" id="headerDateLabel"></div>
+        <div style="font-size:9px;color:var(--accent);" id="headerDateToday"></div>
+      </div>
+      <button class="date-arrow-sm" id="headerFwdBtn" onclick="changeDay(1)">›</button>
     </div>
     <div class="kcal-badge" id="headerBadge" onclick="switchTab('summary')" style="display:none">
       <div class="val" id="headerKcal">0</div>
       <div class="sub" id="headerGoal">/ 2000 kcal</div>
     </div>
-    <div id="headerSetup" style="font-size:11px;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:8px;padding:5px 10px;">初期設定中</div>
+    <div id="headerSetup" style="font-size:10px;color:var(--muted);">設定中</div>
   </div>
 
   <!-- ONBOARDING -->
@@ -219,14 +225,6 @@
 
   <!-- CHAT -->
   <div id="screen-chat" class="screen">
-    <div class="date-nav">
-      <button class="date-arrow" onclick="changeDay(-1)">‹</button>
-      <div style="text-align:center;">
-        <div class="date-label" id="chatDateLabel"></div>
-        <div class="date-today" id="chatDateToday"></div>
-      </div>
-      <button class="date-arrow" id="chatFwdBtn" onclick="changeDay(1)">›</button>
-    </div>
     <div class="chat-messages" id="chatMessages"></div>
     <div class="chat-input-wrap">
       <textarea id="chatInput" rows="2" placeholder="食事：ご飯1杯と卵焼き&#10;運動：30分ウォーキング"></textarea>
@@ -236,14 +234,6 @@
 
   <!-- LOG -->
   <div id="screen-log" class="screen">
-    <div class="date-nav">
-      <button class="date-arrow" onclick="changeDay(-1)">‹</button>
-      <div style="text-align:center;">
-        <div class="date-label" id="logDateLabel"></div>
-        <div class="date-today" id="logDateToday"></div>
-      </div>
-      <button class="date-arrow" id="logFwdBtn" onclick="changeDay(1)">›</button>
-    </div>
     <div class="scroll" id="logList"></div>
   </div>
 
@@ -254,14 +244,6 @@
 
   <!-- SUMMARY -->
   <div id="screen-summary" class="screen">
-    <div class="date-nav">
-      <button class="date-arrow" onclick="changeDay(-1)">‹</button>
-      <div style="text-align:center;">
-        <div class="date-label" id="summaryDateLabel"></div>
-        <div class="date-today" id="summaryDateToday"></div>
-      </div>
-      <button class="date-arrow" id="summaryFwdBtn" onclick="changeDay(1)">›</button>
-    </div>
     <div class="scroll" id="summaryContent"></div>
   </div>
 
@@ -363,6 +345,7 @@ function saveApiKey(){
 
 function showMainApp(){
   document.getElementById('mainHeader').style.display='flex';
+  document.getElementById('headerDateNav').style.display='flex';
   if(profile){
     document.getElementById('screen-ob').classList.remove('active');
     document.getElementById('mainNav').style.display='flex';
@@ -387,12 +370,10 @@ function changeDay(delta){
 }
 function updateDateNavs(){
   const lbl=formatDate(viewDate),note=isToday(viewDate)?'今日':'';
-  ['chat','log','summary'].forEach(t=>{
-    const l=document.getElementById(t+'DateLabel'),s=document.getElementById(t+'DateToday');
-    if(l)l.textContent=lbl;if(s)s.textContent=note;
-    const fwd=document.getElementById(t+'FwdBtn');
-    if(fwd)fwd.style.opacity=isToday(viewDate)?'0.3':'1';
-  });
+  const l=document.getElementById('headerDateLabel'),s=document.getElementById('headerDateToday');
+  if(l)l.textContent=lbl;if(s)s.textContent=note;
+  const fwd=document.getElementById('headerFwdBtn');
+  if(fwd)fwd.style.opacity=isToday(viewDate)?'0.3':'1';
 }
 
 // ── Onboarding ─────────────────────────────────────────────
