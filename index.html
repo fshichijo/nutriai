@@ -459,9 +459,9 @@ async function sendMessage(){
   try{
     const hist=allChat[viewDate]||[];
     const apiMsgs=hist.map(m=>({role:m.role,content:m.raw||m.text}));
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
+    const res=await fetch('https://nutriai-proxydeploy.f-shichijo.workers.dev',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},
+      headers:{'Content-Type':'application/json'},
       body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYSTEM_PROMPT,messages:apiMsgs})
     });
     const data=await res.json();
