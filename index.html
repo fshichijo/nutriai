@@ -231,7 +231,11 @@
     <!-- AI input mode -->
     <div id="inputModeAI" class="chat-input-wrap">
       <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
-        <textarea id="chatInput" rows="2" placeholder="食事：ご飯1杯と卵焼き&#10;運動：30分ウォーキング"></textarea>
+        <div style="display:flex;gap:6px;align-items:flex-end;">
+          <textarea id="chatInput" rows="2" placeholder="食事：ご飯1杯と卵焼き&#10;運動：30分ウォーキング" style="flex:1;"></textarea>
+          <button onclick="document.getElementById('photoInput').click()" style="width:40px;height:40px;border-radius:11px;border:1px solid var(--border);background:var(--card);font-size:18px;cursor:pointer;flex-shrink:0;">📷</button>
+          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" onchange="sendPhoto(this)">
+        </div>
         <div style="display:flex;gap:6px;">
           <button class="mode-btn mode-active" id="btnModeAI" onclick="setInputMode('ai')">🤖 AIに聞く</button>
           <button class="mode-btn" id="btnModeDirect" onclick="setInputMode('direct')">📝 カロリー直入力</button>
@@ -536,6 +540,92 @@ function sendDirect(){
 document.getElementById('directKcal').addEventListener('keydown',e=>{
   if(e.key==='Enter'){e.preventDefault();sendDirect();}
 });
+
+// ── Photo calorie analysis ─────────────────────────────────
+async function sendPhoto(input){
+  const file=input.files[0];
+  if(!file||sending)return;
+  sending=true;
+  input.value='';
+  const t=timeStr();
+
+  // Show preview bubble
+  const previewUrl=URL.createObjectURL(file);
+  const msgs=document.getElementById('chatMessages');
+  const previewDiv=document.createElement('div');
+  previewDiv.className='bubble-wrap user';
+  previewDiv.innerHTML=`<div class="bubble user" style="padding:6px;"><img src="${previewUrl}" style="max-width:180px;border-radius:8px;display:block;"></div>`;
+  msgs.appendChild(previewDiv);
+
+  // Timestamp
+  const tsDiv=document.createElement('div');
+  tsDiv.className='timestamp user';
+  tsDiv.textContent=t;
+  msgs.appendChild(tsDiv);
+  scrollChat();
+
+  // Typing indicator
+  const tid='t'+Date.now();
+  msgs.insertAdjacentHTML('beforeend',
+    `<div class="bubble-wrap ai" id="${tid}"><div class="ai-avatar">✦</div><div class="typing"><div class="dot" style="animation:blink 1.2s ease 0s infinite"></div><div class="dot" style="animation:blink 1.2s ease .2s infinite"></div><div class="dot" style="animation:blink 1.2s ease .4s infinite"></div></div></div>`);
+  scrollChat();
+
+  try{
+    // Convert image to base64
+    const base64=await new Promise((res,rej)=>{
+      const reader=new FileReader();
+      reader.onload=()=>res(reader.result.split(',')[1]);
+      reader.onerror=rej;
+      reader.readAsDataURL(file);
+    });
+    const mediaType=file.type||'image/jpeg';
+
+    const res=await fetch('https://nutriai-proxydeploy.f-shichijo.workers.dev',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:1000,
+        system:SYSTEM_PROMPT,
+        messages:[{
+          role:'user',
+          content:[
+            {type:'image',source:{type:'base64',media_type:mediaType,data:base64}},
+            {type:'text',text:'この食事の写真を見て、含まれている食品とカロリーを分析してください。'}
+          ]
+        }]
+      })
+    });
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'エラーが発生しました。';
+    document.getElementById(tid)?.remove();
+
+    const match=raw.match(/```json\s*([\s\S]*?)```/);
+    let parsed=null;
+    if(match){try{parsed=JSON.parse(match[1]);}catch{}}
+    const textOnly=raw.replace(/```json[\s\S]*?```/g,'').trim();
+    const replyTime=timeStr();
+    let display=textOnly;
+    let bubbleType=null;
+
+    if(parsed?.type==='food'&&parsed?.items){
+      const ts=Date.now();
+      if(!allLog[viewDate])allLog[viewDate]=[];
+      allLog[viewDate].push(...parsed.items.map((it,i)=>({...it,id:`${ts}-${i}`,type:'food'})));
+      save(LK,allLog);
+      const lines=parsed.items.map(it=>`• ${it.name} — ${it.calories} kcal`).join('\n');
+      display=`${textOnly}\n\n${lines}\n\n📊 合計: ${parsed.total_calories} kcal${parsed.message?'\n💡 '+parsed.message:''}`;
+      bubbleType='food';
+    }
+
+    addBubbleDOM('ai',display,raw,true,replyTime,bubbleType);
+    updateHeader();
+  }catch(e){
+    document.getElementById(tid)?.remove();
+    addBubbleDOM('ai','エラーが発生しました。もう一度お試しください。',null,true,timeStr(),null);
+  }
+  sending=false;
+}
 
 async function sendMessage(){
   const text=chatInput.value.trim();
